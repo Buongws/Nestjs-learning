@@ -1,98 +1,97 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+## Module
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Trong NestJS, module giống như một cách tổ chức code của bạn thành những "khối" riêng biệt, mỗi khối chịu trách nhiệm cho một phần chức năng cụ thể của ứng dụng. Nếu bạn đã dùng Express.js, hãy nghĩ về module như cách bạn chia nhỏ ứng dụng thành các file route riêng (ví dụ: userRoutes.js, productRoutes.js), nhưng trong NestJS, nó được nâng cấp lên một cấp độ có tổ chức và mạnh mẽ hơn.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+controllers: Nơi xử lý các HTTP request (giống như các route trong Express).
+providers: Các service hoặc class chứa logic chính (giống middleware hoặc logic xử lý trong Express).
+imports: Nếu module này cần dùng chức năng từ module khác, bạn import vào đây.
+exports: Nếu module này muốn chia sẻ service hoặc logic cho module khác dùng.
 
-## Description
+## Controller
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Controller thường:
+Nhận request từ client.
+Gọi đến service để xử lý logic nghiệp vụ.
+Trả về response (kết quả) cho client.
 
-## Project setup
+```
+import { Controller, Get } from '@nestjs/common';
 
-```bash
-$ npm install
+@Controller('users') // Định nghĩa prefix cho route, giống như "/users" trong Express
+export class UsersController {
+  @Get() // Xử lý GET request tới "/users"
+  getUsers() {
+    return 'Danh sách người dùng';
+  }
+}
 ```
 
-## Compile and run the project
+## Service
 
-```bash
-# development
-$ npm run start
+Thông thường, controller không chứa logic phức tạp (giống như trong Express, chúng ta không nên viết hết logic vào route handler). Thay vào đó, controller gọi đến service để xử lý.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+import { Controller, Get } from '@nestjs/common';
+import { UsersService } from './users.service';
 
-```bash
-# unit tests
-$ npm run test
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {} // Dependency Injection
 
-# e2e tests
-$ npm run test:e2e
+  @Get()
+  getUsers() {
+    return this.usersService.getAllUsers(); // Gọi service để lấy dữ liệu
+  }
+}
 
-# test coverage
-$ npm run test:cov
 ```
 
-## Deployment
+## Decorator
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Decorator giống như "nhãn dán" giúp NestJS hiểu code của bạn làm gì mà không cần viết logic lặp đi lặp lại.
+Nó là tính năng của TypeScript, không có trong JavaScript thuần.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+NestJS dùng decorator để định nghĩa hành vi của code:
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+@Controller('ninjas'): Báo cho NestJS rằng class này là một controller với tiền tố route /ninjas.
+@Get(): Báo rằng method này xử lý HTTP GET request.
+@Injectable(): Báo rằng class này có thể được inject vào nơi khác.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Inject
 
-## Resources
+Inject (tiêm) là hành động đưa một dependency (phụ thuộc) vào một class hoặc đối tượng để nó có thể sử dụng mà không cần tự tạo thủ công. Trong NestJS, "inject" thường liên quan đến Dependency Injection, nhưng mình sẽ giải thích riêng để rõ hơn.
 
-Check out a few resources that may come in handy when working with NestJS:
+**NestJS tự động "inject" các service vào controller qua constructor, nhờ decorator @Injectable() và hệ thống Dependency Injection.**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Dependency injection
 
-## Support
+Dependency Injection (Tiêm phụ thuộc) là một design pattern (mô hình thiết kế) trong lập trình, nơi các dependency (phụ thuộc) của một class không được tạo bên trong class đó, mà được "tiêm" từ bên ngoài. Điều này giúp code dễ bảo trì, dễ test, và linh hoạt hơn.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+> Cách NestJS làm DI:
 
-## Stay in touch
+> Đăng ký provider: Khi bạn đánh dấu NinjasService bằng @Injectable(), NestJS biết đây là một dependency có thể được inject.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+> Tự động inject: Khi NinjasController cần NinjasService, NestJS tự tìm và cung cấp instance của NinjasService.
 
-## License
+> Quản lý scope: NestJS đảm bảo mỗi dependency chỉ tạo một lần (singleton) trong scope mặc định, trừ khi bạn cấu hình khác.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## NotFoundException
+
+Auto define the message error and return the message error and id like 400, 401 , 403 ....
+
+## Guards
+
+Guards trong NestJS là một cơ chế dùng để kiểm soát quyền truy cập vào các route hoặc method trong controller. Nó quyết định liệu một request có được phép tiếp tục xử lý hay không, dựa trên các điều kiện bạn đặt ra (như người dùng có đăng nhập không, có vai trò phù hợp không).
+
+## Pipes: "Cầu nối" xử lý dữ liệu trước khi vào logic chính, tích hợp validation và transformation.
+
+Pipes chạy sau Guards trong pipeline của NestJS.
+
+ipes trong NestJS là một cơ chế để xử lý và biến đổi dữ liệu đầu vào trước khi nó được truyền vào controller. Pipe có thể:
+
+Xác thực (validation): Kiểm tra dữ liệu có hợp lệ không.
+Chuyển đổi (transformation): Biến đổi dữ liệu thành định dạng mong muốn.
+Ý nghĩa:
+Pipe giống như middleware trong Express, nhưng chuyên dụng hơn, hoạt động ở mức tham số của method (như @Body(), @Param()).
+NestJS cung cấp các pipe sẵn có (như ValidationPipe) và bạn cũng có thể tự tạo pipe.
